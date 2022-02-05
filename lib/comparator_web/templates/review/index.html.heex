@@ -1,0 +1,32 @@
+<h1>Listing Reviews</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Rating</th>
+      <th>Recommended</th>
+      <th>Body</th>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+<%= for review <- @reviews do %>
+    <tr>
+      <td><%= review.title %></td>
+      <td><%= review.rating %></td>
+      <td><%= review.recommended %></td>
+      <td><%= review.body %></td>
+
+      <td>
+        <span><%= link "Show", to: Routes.review_path(@conn, :show, review) %></span>
+        <span><%= link "Edit", to: Routes.review_path(@conn, :edit, review) %></span>
+        <span><%= link "Delete", to: Routes.review_path(@conn, :delete, review), method: :delete, data: [confirm: "Are you sure?"] %></span>
+      </td>
+    </tr>
+<% end %>
+  </tbody>
+</table>
+
+<span><%= link "New Review", to: Routes.review_path(@conn, :new) %></span>
