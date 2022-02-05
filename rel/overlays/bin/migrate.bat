@@ -1,0 +1,1 @@
+call "%~dp0\comparator" eval Comparator.Release.migrate
