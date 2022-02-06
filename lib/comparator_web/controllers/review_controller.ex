@@ -3,6 +3,9 @@ defmodule ComparatorWeb.ReviewController do
 
   alias Comparator.Reviews
   alias Comparator.Reviews.Review
+  import ComparatorWeb.UserAuth
+
+  plug :require_authenticated_user when action not in [:show, :index]
 
   def index(conn, _params) do
     reviews = Reviews.list_reviews()
