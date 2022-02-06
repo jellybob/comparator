@@ -59,11 +59,11 @@ defmodule Comparator.AuthTest do
     end
 
     test "validates email and password when given" do
-      {:error, changeset} = Auth.register_user(%{email: "not valid", password: "not valid"})
+      {:error, changeset} = Auth.register_user(%{email: "not valid", password: "tiny"})
 
       assert %{
                email: ["must have the @ sign and no spaces"],
-               password: ["should be at least 12 character(s)"]
+               password: ["should be at least 5 character(s)"]
              } = errors_on(changeset)
     end
 
@@ -71,7 +71,7 @@ defmodule Comparator.AuthTest do
       too_long = String.duplicate("db", 100)
       {:error, changeset} = Auth.register_user(%{email: too_long, password: too_long})
       assert "should be at most 160 character(s)" in errors_on(changeset).email
-      assert "should be at most 72 character(s)" in errors_on(changeset).password
+      assert "should be at most 120 character(s)" in errors_on(changeset).password
     end
 
     test "validates email uniqueness" do
@@ -97,7 +97,7 @@ defmodule Comparator.AuthTest do
   describe "change_user_registration/2" do
     test "returns a changeset" do
       assert %Ecto.Changeset{} = changeset = Auth.change_user_registration(%User{})
-      assert changeset.required == [:password, :email]
+      assert changeset.required == [:password, :email, :name]
     end
 
     test "allows fields to be set" do
@@ -144,8 +144,7 @@ defmodule Comparator.AuthTest do
     test "validates maximum value for email for security", %{user: user} do
       too_long = String.duplicate("db", 100)
 
-      {:error, changeset} =
-        Auth.apply_user_email(user, valid_user_password(), %{email: too_long})
+      {:error, changeset} = Auth.apply_user_email(user, valid_user_password(), %{email: too_long})
 
       assert "should be at most 160 character(s)" in errors_on(changeset).email
     end
@@ -153,15 +152,13 @@ defmodule Comparator.AuthTest do
     test "validates email uniqueness", %{user: user} do
       %{email: email} = user_fixture()
 
-      {:error, changeset} =
-        Auth.apply_user_email(user, valid_user_password(), %{email: email})
+      {:error, changeset} = Auth.apply_user_email(user, valid_user_password(), %{email: email})
 
       assert "has already been taken" in errors_on(changeset).email
     end
 
     test "validates current password", %{user: user} do
-      {:error, changeset} =
-        Auth.apply_user_email(user, "invalid", %{email: unique_user_email()})
+      {:error, changeset} = Auth.apply_user_email(user, "invalid", %{email: unique_user_email()})
 
       assert %{current_password: ["is not valid"]} = errors_on(changeset)
     end
@@ -262,12 +259,12 @@ defmodule Comparator.AuthTest do
     test "validates password", %{user: user} do
       {:error, changeset} =
         Auth.update_user_password(user, valid_user_password(), %{
-          password: "not valid",
+          password: "tiny",
           password_confirmation: "another"
         })
 
       assert %{
-               password: ["should be at least 12 character(s)"],
+               password: ["should be at least 5 character(s)"],
                password_confirmation: ["does not match password"]
              } = errors_on(changeset)
     end
@@ -278,7 +275,7 @@ defmodule Comparator.AuthTest do
       {:error, changeset} =
         Auth.update_user_password(user, valid_user_password(), %{password: too_long})
 
-      assert "should be at most 72 character(s)" in errors_on(changeset).password
+      assert "should be at most 120 character(s)" in errors_on(changeset).password
     end
 
     test "validates current password", %{user: user} do
@@ -348,7 +345,11 @@ defmodule Comparator.AuthTest do
     end
 
     test "does not return user for expired token", %{token: token} do
-      {1, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
+      # 100 years and one second in seconds
+      expiry = (101 * 365 * 24 * 60 * 60) + 1
+      inserted = DateTime.add(DateTime.utc_now(), -expiry, :second)
+
+      {1, nil} = Repo.update_all(UserToken, set: [inserted_at: inserted])
       refute Auth.get_user_by_session_token(token)
     end
   end
@@ -471,12 +472,12 @@ defmodule Comparator.AuthTest do
     test "validates password", %{user: user} do
       {:error, changeset} =
         Auth.reset_user_password(user, %{
-          password: "not valid",
+          password: "tiny",
           password_confirmation: "another"
         })
 
       assert %{
-               password: ["should be at least 12 character(s)"],
+               password: ["should be at least 5 character(s)"],
                password_confirmation: ["does not match password"]
              } = errors_on(changeset)
     end
@@ -484,7 +485,7 @@ defmodule Comparator.AuthTest do
     test "validates maximum values for password for security", %{user: user} do
       too_long = String.duplicate("db", 100)
       {:error, changeset} = Auth.reset_user_password(user, %{password: too_long})
-      assert "should be at most 72 character(s)" in errors_on(changeset).password
+      assert "should be at most 120 character(s)" in errors_on(changeset).password
     end
 
     test "updates the password", %{user: user} do

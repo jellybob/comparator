@@ -1,4 +1,4 @@
-defmodule ComparatorWeb.ReviewControllerTest do
+defmodule ComparatorWeb.ReviewController.AuthenticatedTest do
   use ComparatorWeb.ConnCase
 
   import Comparator.ReviewsFixtures
@@ -6,6 +6,8 @@ defmodule ComparatorWeb.ReviewControllerTest do
   @create_attrs %{body: "some body", rating: 42, recommended: true, title: "some title"}
   @update_attrs %{body: "some updated body", rating: 43, recommended: false, title: "some updated title"}
   @invalid_attrs %{body: nil, rating: nil, recommended: nil, title: nil}
+
+  setup [:register_and_log_in_user]
 
   describe "index" do
     test "lists all reviews", %{conn: conn} do

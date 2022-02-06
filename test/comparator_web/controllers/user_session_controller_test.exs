@@ -33,9 +33,9 @@ defmodule ComparatorWeb.UserSessionControllerTest do
       assert redirected_to(conn) == "/"
 
       # Now do a logged in request and assert on the menu
-      conn = get(conn, "/")
+      conn = get(conn, "/reviews")
       response = html_response(conn, 200)
-      assert response =~ user.email
+      assert response =~ user.name
       assert response =~ "Settings</a>"
       assert response =~ "Log out</a>"
     end

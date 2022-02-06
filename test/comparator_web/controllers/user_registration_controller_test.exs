@@ -2,6 +2,7 @@ defmodule ComparatorWeb.UserRegistrationControllerTest do
   use ComparatorWeb.ConnCase, async: true
 
   import Comparator.AuthFixtures
+  alias Comparator.Auth
 
   describe "GET /users/register" do
     test "renders registration page", %{conn: conn} do
@@ -31,10 +32,12 @@ defmodule ComparatorWeb.UserRegistrationControllerTest do
       assert get_session(conn, :user_token)
       assert redirected_to(conn) == "/"
 
+      user = Auth.get_user_by_email(email)
+
       # Now do a logged in request and assert on the menu
-      conn = get(conn, "/")
+      conn = get(conn, "/reviews")
       response = html_response(conn, 200)
-      assert response =~ email
+      assert response =~ user.name
       assert response =~ "Settings</a>"
       assert response =~ "Log out</a>"
     end
@@ -42,13 +45,13 @@ defmodule ComparatorWeb.UserRegistrationControllerTest do
     test "render errors for invalid data", %{conn: conn} do
       conn =
         post(conn, Routes.user_registration_path(conn, :create), %{
-          "user" => %{"email" => "with spaces", "password" => "too short"}
+          "user" => %{"email" => "with spaces", "password" => "tiny"}
         })
 
       response = html_response(conn, 200)
       assert response =~ "<h1>Register</h1>"
       assert response =~ "must have the @ sign and no spaces"
-      assert response =~ "should be at least 12 character"
+      assert response =~ "should be at least 5 character"
     end
   end
 end

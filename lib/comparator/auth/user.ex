@@ -7,9 +7,9 @@ defmodule Comparator.Auth.User do
     field :name, :string
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
-    field :confirmed_at, :naive_datetime
+    field :confirmed_at, :utc_datetime
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   @doc """
